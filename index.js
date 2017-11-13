@@ -44,6 +44,11 @@ module.exports = class Storage {
 	close() {
 		this.network.close();
 		this.isOpen = false;
+		if(this.data) {
+			return this.data.close();
+		} else {
+			return Promise.resolve();
+		}
 	}
 
 	_rpc(action, args) {
