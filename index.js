@@ -91,18 +91,29 @@ module.exports = class Storage {
 
 	_handleMessage({ returnPath, seq, type, payload }) {
 		if(type === 'success') {
+			/*
+			 * Operation was successful. Resolve the promise associated with
+			 * sequence.
+			 */
 			const promise = this.requests.get(seq);
 			if(! promise) return;
 
 			this.requests.delete(seq);
 			promise.resolve(payload);
 		} if(type === 'error') {
+			/**
+			 * Operation resulted in an error. Reject the promise associated
+			 * with sequence.
+			 */
 			const promise = this.requests.get(seq);
 			if(! promise) return;
 
 			this.requests.delete(seq);
 			promise.reject(new Error(payload));
 		} else if(type === 'get') {
+			/**
+			 * Requesting that some data should be loaded.
+			 */
 			this._data().then(() => {
 				const value = this.data.get(payload[0]);
 				this._replySuccess(returnPath, seq, value);
@@ -110,6 +121,9 @@ module.exports = class Storage {
 				this._replyError(returnPath, seq, err);
 			});
 		} else if(type === 'set') {
+			/**
+			 * Requesting that some data should be set.
+			 */
 			this._data().then(() => {
 				this.data.set(payload[0], payload[1]);
 				this._replySuccess(returnPath, seq);
