@@ -13,6 +13,7 @@ module.exports = class Storage {
 
 		this.id = options.id;
 		this.isOpen = false;
+		this.openPromise = null;
 
 		this.path = options.path;
 
@@ -21,20 +22,28 @@ module.exports = class Storage {
 	}
 
 	open() {
+		// If this storage is openeded, return an already resolved promise
 		if(this.isOpen) return Promise.resolve();
 
+		// If this storage is being opened return the active promise
+		if(this.openPromise) return this.openPromise;
+
+		debug('Opening storage connection to', this.path);
+		// Start the network using a socket under the storage path
 		this.network = new Network(path.join(this.path, '.dwaal-socket'));
 		this.network.on('message', this._handleMessage.bind(this));
 
-		return this.network.open()
+		return this.openPromise = this.network.open()
 			.then(() => {
-				debug('Storage has been opened at', this.path);
+				debug('Storage connection has been opened to', this.path);
 				this.isOpen = true;
+				this.openPromise = null;
 			});
 	}
 
 	close() {
 		this.network.close();
+		this.isOpen = false;
 	}
 
 	_rpc(action, args) {
