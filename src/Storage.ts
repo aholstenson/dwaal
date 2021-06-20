@@ -8,12 +8,41 @@ import { DocHandle } from './DocHandle';
 import { DMapImpl } from './DMapImpl';
 import { DMap } from './DMap';
 
+/**
+ * Options available for {@link Storage}.
+ */
 export interface StorageOptions {
+	/**
+	 * The network to use for finding and communicating with other nodes.
+	 */
 	network: Network;
 
+	/**
+	 * Path to directory where data will be stored.
+	 */
 	path: string;
 }
 
+/**
+ * Distributed persistent storage on top of an Ataraxia network.
+ *
+ * ```javascript
+ * import { Storage } from 'dwaal';
+ *
+ * // Create a storage layer on the network
+ * const storage = new Storage({
+ *   network: net,
+ *   path: 'data/directory/'
+ * });
+ *
+ * // Open a map
+ * const map = await storage.openMap('name-of-map');
+ *
+ * // Similar use as a normal map
+ * map.set('key', 100);
+ * const value = map.get('key');
+ * ```
+ */
 export class Storage {
 	private readonly debug: debug.Debugger;
 
@@ -22,6 +51,12 @@ export class Storage {
 
 	private readonly docs: Set<DocHandle>;
 
+	/**
+	 * Create a new instance on top of an existing network.
+	 *
+	 * @param options -
+	 *   options for the storage
+	 */
 	public constructor(options: StorageOptions) {
 		this.debug = debug('dwaal:' + options.network.networkName);
 
@@ -32,15 +67,40 @@ export class Storage {
 		this.docs = new Set();
 	}
 
+	/**
+	 * Log information about an error that has occurred.
+	 *
+	 * @param name -
+	 *   message
+	 * @param err -
+	 *   error
+	 */
 	private logError(name: string, err: Error) {
 		this.debug(name, err);
 	}
 
+	/**
+	 * Open up a distributed map.
+	 *
+	 * @param name -
+	 *   name of the map to open
+	 * @returns
+	 *   promise that resolves to the map
+	 */
 	public async openMap<V>(name: string): Promise<DMap<V>> {
 		const handle = await this.openDoc(name);
 		return new DMapImpl(handle);
 	}
 
+	/**
+	 * Open up a Yjs document.
+	 *
+	 * @param name -
+	 *   name of the document to open
+	 * @returns
+	 *   promise that resolves to the document, including support for closing
+	 *   it
+	 */
 	public async openDoc(name: string): Promise<DocHandle> {
 		const doc = await this.persistence.getYDoc(name);
 		const exchange = this.net.createExchange<MessageTypes>('dwaal:' + name);
