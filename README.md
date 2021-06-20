@@ -8,7 +8,7 @@ Distributed persistent storage service designed to be used with an
   allowing for:
   * Instant updates to the local data
   * Near-realtime updates to other nodes
-  * Continues working even without majority of nodes being reachable
+  * Continues working even without majority of nodes being unreachable
 * Provides a **persistent map** for easy key-value storage
 * Ability to open a **Yjs document** to access all of its abilities
 * Replicates only open maps and documents
