@@ -190,4 +190,104 @@ describe('Storage', () => {
 			}
 		}
 	});
+
+	it('4 peer mesh, 100 random updates, 5th peer joins post updates', async () => {
+		testNetwork
+			.bidirectional('a', 'b')
+			.bidirectional('a', 'c')
+			.bidirectional('b', 'd');
+
+		const storages = [
+			await storage('a'),
+			await storage('b'),
+			await storage('c'),
+			await storage('d')
+		];
+
+		const docs = await Promise.all(storages.map(s => s.openDoc('test')));
+		const maps = docs.map(doc => doc.document.getMap('root'));
+
+		for(let i = 0; i < 100; i++) {
+			const map = maps[
+				Math.floor(Math.random() * maps.length)
+			];
+
+			const key = Math.floor(Math.random() * 10);
+			map.set('v' + key, Math.random());
+		}
+
+		await sleep(200);
+
+		testNetwork.bidirectional('b', 'e');
+
+		const eStorage = await storage('e');
+		const eDoc = await eStorage.openDoc('test');
+		maps.push(eDoc.document.getMap('root'));
+
+		await sleep(100);
+
+		// Check that the keys match
+		const keys = maps.map(map => [ ...map.keys() ].sort());
+		for(let i = 1; i < keys.length; i++) {
+			expect(keys[i]).toStrictEqual(keys[i - 1]);
+		}
+
+		// Check the values
+		for(const key of keys[0]) {
+			const value = maps[0].get(key);
+			for(let i = 1; i < maps.length; i++) {
+				expect(maps[i].get(key)).toBe(value);
+			}
+		}
+	});
+
+	it('4 peer mesh, 500 random updates, 5th peer joins during updates', async () => {
+		testNetwork
+			.bidirectional('a', 'b')
+			.bidirectional('a', 'c')
+			.bidirectional('b', 'd');
+
+		const storages = [
+			await storage('a'),
+			await storage('b'),
+			await storage('c'),
+			await storage('d')
+		];
+
+		const docs = await Promise.all(storages.map(s => s.openDoc('test')));
+		const maps = docs.map(doc => doc.document.getMap('root'));
+
+		for(let i = 0; i < 500; i++) {
+			const map = maps[
+				Math.floor(Math.random() * maps.length)
+			];
+
+			const key = Math.floor(Math.random() * 10);
+			map.set('v' + key, Math.random());
+
+			if(i === 430) {
+				testNetwork.bidirectional('b', 'e');
+
+				const eStorage = await storage('e');
+				const eDoc = await eStorage.openDoc('test');
+				maps.push(eDoc.document.getMap('root'));
+			}
+		}
+
+		await sleep(200);
+
+		// Check that the keys match
+		const keys = maps.map(map => [ ...map.keys() ].sort());
+		for(let i = 1; i < keys.length; i++) {
+			expect(keys[i]).toStrictEqual(keys[i - 1]);
+		}
+
+		// Check the values
+		for(const key of keys[0]) {
+			const value = maps[0].get(key);
+			for(let i = 1; i < maps.length; i++) {
+				expect(maps[i].get(key)).toBe(value);
+			}
+		}
+	});
 });
