@@ -5,6 +5,7 @@ import * as Y from 'yjs';
 
 import { MessageTypes } from './messages/MessageTypes';
 import { DocHandle } from './DocHandle';
+import { DMapImpl } from './DMapImpl';
 import { DMap } from './DMap';
 
 export interface StorageOptions {
@@ -31,13 +32,13 @@ export class Storage {
 		this.docs = new Set();
 	}
 
-	private logAndEmitError(name: string, err: Error) {
+	private logError(name: string, err: Error) {
 		this.debug(name, err);
 	}
 
 	public async openMap<V>(name: string): Promise<DMap<V>> {
 		const handle = await this.openDoc(name);
-		return new DMap(handle);
+		return new DMapImpl(handle);
 	}
 
 	public async openDoc(name: string): Promise<DocHandle> {
@@ -55,7 +56,7 @@ export class Storage {
 					msg.source.send('dwaal:update', {
 						doc: name,
 						data: update.buffer
-					}).catch(err => this.logAndEmitError(
+					}).catch(err => this.logError(
 						'Could not send update for ' + name,
 						err
 					));
@@ -81,7 +82,7 @@ export class Storage {
 			node.send('dwaal:stateVector', {
 				doc: name,
 				data: stateVector.buffer
-			}).catch(err => this.logAndEmitError(
+			}).catch(err => this.logError(
 				'Could not send state vector for ' + name,
 				err
 			));
@@ -106,7 +107,7 @@ export class Storage {
 						data: update.buffer
 					})
 				}
-			})().catch(err => this.logAndEmitError(
+			})().catch(err => this.logError(
 				'Could not handle update for ' + name,
 				err
 			));

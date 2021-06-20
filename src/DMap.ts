@@ -1,57 +1,81 @@
-import { Map as YMap } from 'yjs';
 
-import { DocHandle } from './DocHandle';
+/**
+ * Map that is distributed between nodes.
+ */
+export interface DMap<V> {
+	/**
+	 * Close this map. The map will stop receiving and propagating updates.
+	 */
+	close(): Promise<void>;
 
-export class DMap<V> {
-	private handle: DocHandle;
-	private ymap: YMap<V>;
+	/**
+	 * Delete a key from the map.
+	 *
+	 * @param key -
+	 *   key to delete
+	 */
+	delete(key: string): void;
 
-	public constructor(handle: DocHandle) {
-		this.handle = handle;
-		this.ymap = handle.document.getMap('_');
-	}
+	/**
+	 * Iterate over all entries in this map.
+	 *
+	 * @param callbackfn -
+	 *   callback
+	 */
+	forEach(callbackfn: (value: V, key: string, map: DMap<V>) => void): void;
 
-	public close(): Promise<void> {
-		return this.handle.close();
-	}
+	/**
+	 * Get the value associated with the given key.
+	 *
+	 * @param key -
+	 *   key to get value for
+	 * @returns
+	 *   value if key is available, or `undefined` if key does not have a value
+	 */
+	get(key: string): V | undefined;
 
-	public delete(key: string): void {
-		this.ymap.delete(key);
-	}
+	/**
+	 * Get if a certain key has a value available in the map.
+	 *
+	 * @param key -
+	 *   key to check
+	 */
+	has(key: string): boolean;
 
-	public forEach(callbackfn: (value: V, key: string, map: DMap<V>) => void): void {
-		this.ymap.forEach((value, key) => callbackfn(value, key, this));
-	}
+	/**
+	 * Set the value associated with a key.
+	 *
+	 * @param key -
+	 *   key to set
+	 * @param value -
+	 *   value to associate with the key
+	 * @returns
+	 *   previous value associated with key
+	 */
+	set(key: string, value: V): V;
 
-	public get(key: string): V | undefined {
-		return this.ymap.get(key);
-	}
+	/**
+	 * Get the number of entries in this map.
+	 */
+	readonly size: number;
 
-	public has(key: string): boolean {
-		return this.ymap.has(key);
-	}
+	/**
+	 * Get an iterator that iterates over all entries in the map.
+	 */
+	[Symbol.iterator](): IterableIterator<[ key: string, value: V ]>;
 
-	public set(key: string, value: V): V {
-		return this.ymap.set(key, value);
-	}
+	/**
+	 * Get an iterator that iterates over all entries in the map.
+	 */
+	entries(): IterableIterator<[ key: string, value: V ]>;
 
-	public get size(): number {
-		return this.ymap.size;
-	}
+	/**
+	 * Get an iterator that iterates over all keys in the map.
+	 */
+	keys(): IterableIterator<string>;
 
-	public [Symbol.iterator](): IterableIterator<[ key: string, value: V ]> {
-		return this.ymap.entries();
-	}
-
-	public entries(): IterableIterator<[ key: string, value: V ]> {
-		return this.ymap.entries();
-	}
-
-	public keys(): IterableIterator<string> {
-		return this.ymap.keys();
-	}
-
-	public values(): IterableIterator<V> {
-		return this.ymap.values();
-	}
+	/**
+	 * Get an iterator that iterates over all values in the map.
+	 */
+	values(): IterableIterator<V>;
 }
