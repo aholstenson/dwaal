@@ -147,6 +147,33 @@ describe('Storage', () => {
 		expect(cMap.get('value')).toBe(100);
 	});
 
+	it('A and B making own changes, sync after', async () => {
+		const aStorage = await storage('a');
+		const bStorage = await storage('b');
+
+		await testNetwork.consolidate();
+
+		const aDoc = await aStorage.openDoc('test');
+		const aMap = aDoc.document.getMap('root');
+		const bDoc = await bStorage.openDoc('test');
+		const bMap = bDoc.document.getMap('root');
+
+		aMap.set('a', 200);
+		bMap.set('b', 'value');
+
+		// Connect the peers
+		testNetwork.bidirectional('a', 'b');
+
+		await testNetwork.consolidate();
+
+		await sleep();
+
+		expect(aMap.get('a')).toBe(200);
+		expect(aMap.get('b')).toBe('value');
+		expect(bMap.get('a')).toBe(200);
+		expect(bMap.get('b')).toBe('value');
+	});
+
 	it('5 peer mesh, 5000 random updates', async () => {
 		testNetwork
 			.bidirectional('a', 'b')
