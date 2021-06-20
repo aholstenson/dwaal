@@ -4,29 +4,51 @@
   "license": "MIT",
   "description": "Key-value storage shared between processes",
   "repository": "aholstenson/dwaal",
-  "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/eslint ."
+    "test": "jest",
+    "apidocs": "typedoc",
+    "ci": "npm run coverage && npm run lint",
+    "coverage": "jest --coverage",
+    "lint": "eslint --ext .ts,.tsx .",
+    "build": "tsc --module commonjs --outDir dist/cjs && tsc --module es6 --outDir dist/esm",
+    "prebuild": "rimraf dist",
+    "prepublishOnly": "npm run build"
   },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
   "keywords": [
     "storage",
     "database",
     "key-value"
   ],
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=12.0.0"
   },
   "dependencies": {
-    "debug": "^3.1.0",
-    "deep-equal": "^1.0.1",
-    "end-of-stream": "^1.4.0",
-    "fs-write-stream-atomic": "^1.0.10",
-    "local-machine-network": "^0.1.0",
-    "msgpack-lite": "^0.1.26",
-    "msgpack-sock": "^1.1.0"
+    "ataraxia": "^0.11.0",
+    "debug": "^4.3.1",
+    "y-leveldb": "^0.1.0",
+    "yjs": "^13.5.10"
   },
   "devDependencies": {
-    "eslint": "^4.10.0",
-    "eslint-plugin-node": "^5.2.1"
+    "@types/debug": "^4.1.5",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.12.2",
+    "@types/tmp": "^0.2.0",
+    "@typescript-eslint/eslint-plugin": "^4.27.0",
+    "@typescript-eslint/parser": "^4.27.0",
+    "coveralls": "^3.1.0",
+    "eslint": "^7.29.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jsdoc": "^35.3.2",
+    "eslint-plugin-tsdoc": "^0.2.14",
+    "jest": "^27.0.4",
+    "jest-config": "^27.0.4",
+    "rimraf": "^3.0.2",
+    "tmp-promise": "^3.0.2",
+    "ts-jest": "^27.0.3",
+    "typedoc": "^0.21.0-beta.2",
+    "typescript": "^4.3.4"
   }
 }

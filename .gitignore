@@ -1,2 +1,9 @@
+apidocs
+dist
 node_modules
-data
+coverage
+npm-debug.log
+.vscode/
+.history/
+/package-lock.json
+/yarn.lock
